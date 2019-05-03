@@ -1,14 +1,35 @@
-import React, {Component} from 'react';
-import { SafeAreaView, StyleSheet, View, Image, Text, ScrollView, Dimensions } from 'react-native';
+import React, { Component } from 'react';
+import {
+  SafeAreaView,
+  View,
+  Image,
+  Text,
+  Animated
+} from 'react-native';
 
 // assets
 import nikeLogo from './assets/nike-logo.png';
 
+// components
+import AnimatedShoe from './AnimatedShoe';
 
-const { width: deviceWidth } = Dimensions.get('window');
+// styles
+import styles from './styles';
+
+// data
+import { SHOE_IMAGES, SHOE_DESCRIPTIONS } from './mockData';
 
 
 export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.contentOffsetXVal = new Animated.Value(0);
+    this.onScroll = Animated.event(
+      [{ nativeEvent: { contentOffset: { x: this.contentOffsetXVal } } }],
+      { useNativeDriver: true }
+    );
+  }
+
   render() {
     return (
       <SafeAreaView style={styles.safeAreaView}>
@@ -26,71 +47,46 @@ export default class App extends Component {
             </Text>
           </View>
         </View>
-        <ScrollView horizontal pagingEnabled style={styles.scrollView}>
-          <View style={styles.textContainer}>
-            <Text
-              style={styles.offWhiteQuotes}
-              adjustsFontSizeToFit // ensures the word fits the screen regardless of how long it is
-              numberOfLines={1}
-            >
-              "AIR"
-            </Text>
-            <View>
-
+        <Animated.ScrollView
+          horizontal
+          pagingEnabled
+          style={styles.scrollView}
+          scrollEventThrottle={1}
+          onScroll={this.onScroll}
+          showsHorizontalScrollIndicator={false}
+        >
+          {SHOE_DESCRIPTIONS.map(({ quotes, price, name, thumbnails }, index) => (
+            <View style={styles.textContainer} key={index}>
+              <View style={styles.quotesTextContainer}>
+                <Text
+                  style={styles.quotesText}
+                  adjustsFontSizeToFit // ensures the word fits the screen regardless of how long it is
+                  numberOfLines={1}
+                >
+                  {quotes}
+                </Text>
+              </View>
+              <View style={styles.shoeInfoContainer}>
+                <Text style={styles.priceText}>${price.toLocaleString()}</Text>
+                <Text style={styles.shoeNameText}>{name}</Text>
+                <View style={styles.thumbnailsContainer}>
+                  <View style={styles.thumbnail} />
+                  <View style={styles.thumbnail} />
+                  <View style={styles.thumbnail} />
+                </View>
+              </View>
             </View>
-          </View>
-        </ScrollView>
+          ))}
+        </Animated.ScrollView>
+        {SHOE_IMAGES.map((src, index) => {
+          return <AnimatedShoe
+            animatedValue={this.contentOffsetXVal}
+            index={index}
+            src={src}
+            key={index}
+          />
+        })}
       </SafeAreaView>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  safeAreaView: {
-    flex: 1,
-    backgroundColor: '#f2f2f2'
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 4
-  },
-  textContainer: {
-    justifyContent: 'space-between',
-    width: deviceWidth,
-    backgroundColor: 'plum'
-  },
-  offWhiteDefinitionText: {
-    fontSize: 13,
-    fontWeight: "700",
-    fontFamily: "Helvetica Neue"
-  },
-  priceText: {
-    fontSize: 80,
-    fontWeight: '700',
-    fontFamily: 'Helvetica Neue',
-    letterSpacing: -0.25
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  nikeLogo: {
-    width: 80,
-    height: 29,
-    flex: 1
-  },
-  scrollView: {
-    flex: 1
-  },
-  offWhiteQuotes: {
-    fontSize: 145,
-    fontFamily: 'Helvetica Neue',
-    fontWeight: '700',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: -2
-  }
-});
